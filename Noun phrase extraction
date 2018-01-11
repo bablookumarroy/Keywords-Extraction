@@ -1,0 +1,201 @@
+import pandas as pd
+
+import numpy as np
+from collections import Counter
+from nltk import word_tokenize, pos_tag, ne_chunk
+
+#data_ = pd.read_csv('noun_phrase_final_3.csv')
+data = pd.read_csv('noun.csv')
+#data = pd.read_csv('z1.csv',error_bad_lines=False)
+
+data.columns
+
+data.shape
+data.info
+data2=data[['msid','title','story','synopsys']]
+data2=data2.dropna(axis=0,how='any')
+data2=data2.reset_index(drop=True)
+data2.shape
+
+
+import re
+#from rake_nltk import Rake
+
+def clean_html(raw_html):
+        cleanr = re.compile('<.*?>')
+        cleantext = re.sub(cleanr, '', raw_html)
+        return cleantext
+        
+n=len(data2)
+
+
+    
+
+noun_phrases_title=["none"]*n
+noun_phrases_story=["none"]*n
+noun_phrases_50_words=["none"]*n
+noun_phrases_synopsys=["none"]*n
+
+
+for p in range(n):
+    text=data2['title'].iloc[p]
+    text=clean_html(text)
+    d=pos_tag(word_tokenize(text))
+
+    i=0
+    j=0
+    q=len(d)
+    proper_noun=list()
+    tmp=''
+    while i<q:
+        if(d[i][1]=='NNP'):
+            j=i+1
+            tmp+=d[i][0]
+            while j<q:
+                if(d[j][1]=='NNP'):
+                   tmp+=' '+d[j][0]
+                else:
+                    break
+                j+=1
+            i=j
+            #if(proper_noun.__contains__(tmp)==False):
+            proper_noun.append(tmp)
+            tmp=''
+        i+=1
+    if(len(proper_noun)==0):
+        proper_noun.append('No Proper Noun')
+        
+    counts = Counter(proper_noun)
+    noun_wt=counts.most_common(100)
+    noun_phrases_title[p]=[x[0] for x in noun_wt]
+
+
+for p in range(n):
+    text=data2['story'].iloc[p]
+    text=clean_html(text)
+    d=pos_tag(word_tokenize(text))
+
+    i=0
+    j=0
+    q=len(d)
+    proper_noun=list()
+    tmp=''
+    while i<q:
+        if(d[i][1]=='NNP'):
+            j=i+1
+            tmp+=d[i][0]
+            while j<q:
+                if(d[j][1]=='NNP'):
+                   tmp+=' '+d[j][0]
+                else:
+                    break
+                j+=1
+            i=j
+            #if(proper_noun.__contains__(tmp)==False):
+            proper_noun.append(tmp)
+            tmp=''
+        i+=1
+    if(len(proper_noun)==0):
+        proper_noun.append('No Proper Noun')
+        
+    counts = Counter(proper_noun)
+    noun_wt=counts.most_common(100)
+    noun_phrases_story[p]=[x[0] for x in noun_wt]
+
+
+for p in range(n):
+    text=data2['synopsys'].iloc[p]
+    text=clean_html(text)
+    d=pos_tag(word_tokenize(text))
+
+    i=0
+    j=0
+    q=len(d)
+    proper_noun=list()
+    tmp=''
+    while i<q:
+        if(d[i][1]=='NNP'):
+            j=i+1
+            tmp+=d[i][0]
+            while j<q:
+                if(d[j][1]=='NNP'):
+                   tmp+=' '+d[j][0]
+                else:
+                    break
+                j+=1
+            i=j
+            #if(proper_noun.__contains__(tmp)==False):
+            proper_noun.append(tmp)
+            tmp=''
+        i+=1
+    if(len(proper_noun)==0):
+        proper_noun.append('No Proper Noun')
+        
+    counts = Counter(proper_noun)
+    noun_wt=counts.most_common(100)
+    noun_phrases_synopsys[p]=[x[0] for x in noun_wt]
+
+
+for p in range(n):
+    text=data2['story'].iloc[p]
+    text=clean_html(text)
+    d=pos_tag(word_tokenize(text)[:50])
+
+    i=0
+    j=0
+    q=len(d)
+    proper_noun=list()
+    tmp=''
+    while i<q:
+        if(d[i][1]=='NNP'):
+            j=i+1
+            tmp+=d[i][0]
+            while j<q:
+                if(d[j][1]=='NNP'):
+                   tmp+=' '+d[j][0]
+                else:
+                    break
+                j+=1
+            i=j
+            #if(proper_noun.__contains__(tmp)==False):
+            proper_noun.append(tmp)
+            tmp=''
+        i+=1
+    if(len(proper_noun)==0):
+        proper_noun.append('No Proper Noun')
+        
+    counts = Counter(proper_noun)
+    noun_wt=counts.most_common(100)
+    noun_phrases_50_words[p]=[x[0] for x in noun_wt]
+
+
+data2['noun_phrases_title']=noun_phrases_title
+
+data2['noun_phrases_synopsys']=noun_phrases_synopsys
+
+data2['noun_phrases_50_words']=noun_phrases_50_words
+
+data2['noun_phrases_story']=noun_phrases_story
+
+
+common_proper_noun=["none"]*n
+
+r=data2['noun_phrases_title']
+
+s=data2['noun_phrases_story']
+
+r=list(r)
+
+s=list(s)
+
+
+
+
+for k in range(n):
+    
+    common_proper_noun[k]=set(r[k])&set(s[k])
+    
+
+common_proper_noun[:5]
+
+data2['common_proper_nouns']=common_proper_noun
